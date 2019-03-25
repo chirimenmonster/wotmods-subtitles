@@ -7,6 +7,12 @@
             "reldir":   "scripts/client/gui/mods",
             "include":  "\\.py$$",
             "dirs":     [ "src" ]
+        },
+        {
+            "method":   "plain",
+            "root":     "res",
+            "reldir":   "${flash_dir}",
+            "files":    [ "flash/ShowText/bin/ShowText.swf" ]
         }
     ]
 }

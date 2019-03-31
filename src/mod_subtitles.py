@@ -14,9 +14,17 @@ MOD_NAME = 'subtitles'
 SWF_FILE = 'ShowText.swf'
 SWF_PATH = '${flash_dir}'
 SOUNDINFO = '${resource_dir}/sound.json'
+SOUNDINFO2 = '${resource_dir}/sound_text.xml'
+
+
+ignore_event_patterns = [
+    ".*_ribbon",
+    "chat_shortcut_common_fx"
+]
 
 g_textField = None
 g_soundInfo = None
+g_soundInfo2 = None
 
 def overrideMethod(cls, method):
     def decorator(handler):
@@ -30,7 +38,24 @@ def overrideMethod(cls, method):
 
 @overrideMethod(IngameSoundNotifications, 'play')
 def _play(orig, self, eventName, *args, **kwargs):
+    BigWorld.logInfo(MOD_NAME, 'eventName: {}'.format(eventName), None)
     result = orig(self, eventName, *args, **kwargs)
+    event = self._IngameSoundNotifications__events.get(eventName, None)
+    for category, soundDesc in event.iteritems():
+        if category not in ('fx', 'voice') or soundDesc['sound'] == '':
+            continue
+        soundPath = soundDesc['sound']
+        _, text = _getSoundText(eventName)
+        if not text:
+            for pattern in ignore_event_patterns:
+                if re.match(pattern, eventName):
+                    return
+            text = '({})'.format(soundPath) if soundPath else '[{}]'.format(eventName)
+        if g_textField:
+            g_textField.setText(text)
+        BigWorld.logInfo(MOD_NAME, 'eventName={}, soundPath={}, text={}'.format(eventName, soundPath, text), None)
+    return result
+    
     try:
         BigWorld.logInfo(MOD_NAME, 'eventName: {}'.format(eventName), None)
         event = self._IngameSoundNotifications__events.get(eventName, None)
@@ -49,12 +74,23 @@ def _play(orig, self, eventName, *args, **kwargs):
                 if ignore:
                     continue
                 text = '({})'.format(soundPath)
-            g_textField.setText(text)
-            BigWorld.logInfo(MOD_NAME, 'soundPath: {}, {}'.format(soundPath, text), None)
+            if g_textField:
+                g_textField.setText(text)
+            BigWorld.logInfo(MOD_NAME, 'soundPath={}, text="{}"'.format(soundPath, text), None)
     except:
         LOG_CURRENT_EXCEPTION()
     return result
 
+
+def _getSoundText(eventName):
+    sec = g_soundInfo2.get(eventName, None)
+    soundPath = text = None
+    if sec:
+        soundPath = sec['soundPath']
+        description = sec['description']
+        if sec['text'] and sec['text'] is not None:
+            text = sec['text'][0]
+    return soundPath, text
 
 def _readSoundInfo():
     def encode_key(data):
@@ -64,11 +100,38 @@ def _readSoundInfo():
     section = ResMgr.openSection(SOUNDINFO)
     return json.loads(section.asString, object_hook=encode_key)
 
+def _readSoundInfo2():
+    database = {}
+    section = ResMgr.openSection(SOUNDINFO2)
+    if section is None:
+        BigWorld.logInfo(MOD_NAME, 'file not found: {}'.format(SOUNDINFO2), None)
+    for sec in section.values():
+        voice = sec['voice']
+        if voice is None:
+            continue
+        eventName = sec.name
+        soundPath = voice['wwsound'].asString
+        description = voice['description'] if voice['description'] is not None else None
+        if voice['sentences'] is not None:
+            texts = [ str(v.asBinary).decode() for v in voice['sentences'].values() ]
+        else:
+            texts = None
+        database[eventName] = {
+            'eventName':    eventName,
+            'soundPath':    soundPath,
+            'description':  description,
+            'text':         texts
+        }
+    print database
+    return database
+
 
 def init():
     global g_soundInfo
+    global g_soundInfo2
     global g_textField
     g_soundInfo = _readSoundInfo()
+    g_soundInfo2 = _readSoundInfo2()
     g_textField = TextField()
     g_playerEvents.onAvatarBecomePlayer += g_textField.start
     g_playerEvents.onAvatarBecomeNonPlayer += g_textField.stop

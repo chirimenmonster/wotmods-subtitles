@@ -1,15 +1,22 @@
 
+import json
+import re
+
 import BigWorld
 import GUI
+import ResMgr
 from debug_utils import LOG_CURRENT_EXCEPTION
 from gui.IngameSoundNotifications import IngameSoundNotifications
 from gui.Scaleform.Flash import Flash
 from PlayerEvents import g_playerEvents
 
+MOD_NAME = 'subtitles'
 SWF_FILE = 'ShowText.swf'
 SWF_PATH = '${flash_dir}'
+SOUNDINFO = '${resource_dir}/sound.json'
 
 g_textField = None
+g_soundInfo = None
 
 def overrideMethod(cls, method):
     def decorator(handler):
@@ -23,17 +30,45 @@ def overrideMethod(cls, method):
 
 @overrideMethod(IngameSoundNotifications, 'play')
 def _play(orig, self, eventName, *args, **kwargs):
+    result = orig(self, eventName, *args, **kwargs)
     try:
-        print eventName
-        g_textField.setText(eventName)
+        BigWorld.logInfo(MOD_NAME, 'eventName: {}'.format(eventName), None)
+        event = self._IngameSoundNotifications__events.get(eventName, None)
+        ignore = False
+        for pattern in g_soundInfo['ignore_event_patterns']:
+            if re.match(pattern, eventName):
+                ignore = True
+                break
+        for category, soundDesc in event.iteritems():
+            if category not in ('fx', 'voice') or soundDesc['sound'] == '':
+                continue
+            soundPath = soundDesc['sound']
+            if soundPath in g_soundInfo['sound_texts']:
+                text = g_soundInfo['sound_texts'][soundPath][0]
+            else:
+                if ignore:
+                    continue
+                text = '({})'.format(soundPath)
+            g_textField.setText(text)
+            BigWorld.logInfo(MOD_NAME, 'soundPath: {}, {}'.format(soundPath, text), None)
     except:
         LOG_CURRENT_EXCEPTION()
-    result = orig(self, eventName, *args, **kwargs)
     return result
 
 
+def _readSoundInfo():
+    def encode_key(data):
+        ascii_encode = lambda x: x.encode('ascii') if isinstance(x, unicode) else x
+        return dict({ ascii_encode(key): value for key, value in data.items() })
+    BigWorld.logInfo(MOD_NAME, 'load config file: {}'.format(SOUNDINFO), None)
+    section = ResMgr.openSection(SOUNDINFO)
+    return json.loads(section.asString, object_hook=encode_key)
+
+
 def init():
+    global g_soundInfo
     global g_textField
+    g_soundInfo = _readSoundInfo()
     g_textField = TextField()
     g_playerEvents.onAvatarBecomePlayer += g_textField.start
     g_playerEvents.onAvatarBecomeNonPlayer += g_textField.stop
@@ -47,13 +82,13 @@ class MessageToken(object):
             g_textField.rmovetoToken(id, y=-18)
         screen = GUI.screenResolution()
         center = ( screen[0] / 2, screen[1] / 2)
-        g_textField.setPositionToken(self.objId, center[0] - 20, center[1] + 180)
+        g_textField.setPositionToken(self.objId, center[0] - 80, center[1] + 180)
         g_textField.activeToken(self.objId)
         BigWorld.callback(5.0, self.free)
     
     def free(self):
         g_textField.disposeToken(self.objId)
-        print self.objId
+        #print self.objId
         g_textField.freeToken(self.objId)
 
 
@@ -73,7 +108,7 @@ class TextField(object):
     def start(self):
         screen = GUI.screenResolution()
         center = ( screen[0] / 2, screen[1] / 2)
-        self.setPosition(center[0] - 20, center[1] + 180)
+        self.setPosition(center[0] - 80, center[1] + 180)
         self.flash.active(True)
     
     def stop(self):

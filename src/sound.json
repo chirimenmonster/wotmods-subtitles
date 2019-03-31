@@ -1,0 +1,94 @@
+{
+    "sound_texts": {
+        "vo_target_captured":            [
+            "砲撃準備完了",
+            "目標を補足<!-- 音源未確認 -->"
+        ],
+        "vo_target_lost":   [
+            "<font color='#FF0000'>他の標的を探せ</font><!-- 適用未確認 -->",
+            "目標が移動した<!-- 音源未確認 -->",
+            "目標を見失った<!-- 音源未確認 -->",
+            "敵を見失った、回り込まれないように注意しろ<!-- 音源未確認 -->"
+        ],
+        "vo_target_unlocked":   [
+            "<font color='#FF0000'>目標車輌を変更する</font><!-- 適用未確認 -->"
+        ],
+        "vo_enemy_hp_damaged_by_projectile_by_player":  [
+            "敵装甲を貫通、次弾装填急げ",
+            "目標の装甲を貫通した",
+            "<font color='#FF0000'>敵の装甲を貫通</font><!-- 適用未確認 -->",
+            "目標への命中を確認<!-- 音源未確認 -->",
+            "効いてるぞ<!-- 音源未確認 -->",
+            "砲撃有効<!-- 音源未確認 -->"
+        ],
+        "vo_enemy_hp_damaged_by_projectile_and_chassis_damaged_by_player":  [
+            "<font color='#FF0000'>目標に命中、動きが鈍っている</font><!-- 適用未確認 -->"
+        ],
+        "vo_enemy_no_hp_damage_at_no_attempt_and_chassis_damaged_by_player": [
+            "派手に貫通したぞ （貫通していない）<!-- 音源未確認 -->",
+            "敵の動きが鈍いぞ、チャンスだ<!-- 音源未確認 -->"
+        ],
+        "vo_enemy_fire_started_by_player":  [
+            "<font color='#FF0000'>敵車輌を炎上させた</font><!-- 適用未確認 -->"
+        ],
+        "vo_enemy_killed_by_player":    [
+            "敵車輌の撃破を確認、次の標的を探せ<!-- 音源未確認 -->",
+            "おいおい、全部持っていく気か?<!-- 音源未確認 -->",
+            "味方が敵を撃破した、こっちも負けてられないぞ<!-- 音源未確認 -->",
+            "味方が敵を仕留めた、こっちもうかうかしていられないぞ<!-- 音源未確認 -->"
+        ],
+        "vo_start_battle":              [
+            "前進用意、前へ! 狙うは敵戦車だ",
+            "戦闘開始! 皆の武運を祈る",
+            "戦闘開始! 勝利以外はいらん<!-- 音源未確認 -->",
+            "出撃開始! 各自、死力を尽くして挑め<!-- 音源未確認 -->",
+            "出撃だ、訓練の成果を見せてやれ<!-- 音源未確認 -->",
+            "<font color='#FF0000'>さあ、日頃の成果を見せてやりましょう</font><!-- 適用未確認 -->"
+        ],
+        "vo_vehicle_destroyed":         [
+            "<font color='#FF0000'>車輌大破、戦闘継続不能</font><!-- 適用未確認 -->",
+            "<font color='#FF0000'>生きていれば次がある、総員脱出</font><!-- 適用未確認 -->",
+            "ここまでか、全員脱出しろ!<!-- 音源未確認 -->"
+        ],
+        "vo_engine_damaged":            [
+            "<font color='#FF0000'>エンジン出力半減、機動力低下</font><!-- 適用未確認 -->"
+        ],
+        "vo_ammo_bay_damaged":          [
+            "<font color='#FF0000'>弾薬庫に被弾、被害状況の確認を急げ</font><!-- 適用未確認 -->"
+        ],
+        "vo_gun_functional":    [
+            "<font color='#FF0000'>主砲の応急修理が完了した</font><!-- 適用未確認 -->"
+        ],
+        "vo_turret_rotator_damaged":    [
+            "砲塔旋回装置がやられた、くそっ、回りが遅い"
+        ],
+        "vo_surveying_devices_damaged": [
+            "<font color='#FF0000'>観測装置に被弾、外が見えない</font><!-- 適用未確認 -->"
+        ],
+        "vo_surveying_devices_functional":  [
+            "<font color='#FF0000'>観測装置復旧、視界が回復したぞ</font><!-- 適用未確認 -->",
+            "<font color='#FF0000'>観測装置修理完了、いくわよ</font><!-- 適用未確認 -->"
+        ],
+        "vo_track_damaged": [
+            "履帯に被弾、まずいぞ<!-- 音源未確認 -->",
+            "履帯破損<!-- 音源未確認 -->"
+        ],
+        "vo_radioman_killed":   [
+            "<font color='#FF0000'>無選手負傷、これでは通信連携は難しい</font><!-- 適用未確認 -->"
+        ],
+        "vo_driver_killed": [
+            "<font color='#FF0000'>操縦手が負傷、機動力低下</font><!-- 適用未確認 -->",
+            "操縦手が被弾した、手当を急げ<!-- 音源未確認 -->"
+        ],
+        "vo_loader_killed": [
+            "<font color='#FF0000'>装填手がやられた、装填に時間がかかる</font><!-- 適用未確認 -->"
+        ],
+        "vo_dp_player_joined_platoon":  [
+            "<font color='#FF0000'>小隊に参加しました</font><!-- 適用未確認 -->"
+        ]
+    },
+    "ignore_event_patterns": [
+        ".*_ribbon",
+        "chat_shortcut_common_fx"
+    ]
+}

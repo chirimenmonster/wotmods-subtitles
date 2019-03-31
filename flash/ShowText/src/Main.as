@@ -42,7 +42,7 @@ package
 			
 			textFormat = new TextFormat();
 			textFormat.font = "$FieldFont";
-			textFormat.size = 18;
+			textFormat.size = 16;
 			textFormat.align = TextFormatAlign.CENTER;
 			textFormat.color = 0xffff00;
 			
@@ -53,7 +53,7 @@ package
 			textField.filters = [ dropShadowFilter ];
 			stage.addChild(textField);
 			
-			as_setText("日本語");
+			//as_setText("日本語");
 			as_setPosition(0, 0);
 			
 			//test();

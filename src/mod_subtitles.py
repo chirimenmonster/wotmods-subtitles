@@ -1,6 +1,7 @@
 
 import json
 import re
+import struct
 
 import BigWorld
 import GUI
@@ -100,6 +101,9 @@ def _readSoundInfo():
     section = ResMgr.openSection(SOUNDINFO)
     return json.loads(section.asString, object_hook=encode_key)
 
+def cvt(d):
+	return struct.pack('B', d) if d < 256 else unichr(d)
+
 def _readSoundInfo2():
     database = {}
     section = ResMgr.openSection(SOUNDINFO2)
@@ -113,7 +117,16 @@ def _readSoundInfo2():
         soundPath = voice['wwsound'].asString
         description = voice['description'] if voice['description'] is not None else None
         if voice['sentences'] is not None:
-            texts = [ str(v.asBinary).decode() for v in voice['sentences'].values() ]
+            texts = []
+            for v in voice['sentences'].values():
+                text = v.asBinary
+                text = re.sub(r'&#(\d+);', lambda m: cvt(int(m.group(1))), text)
+                text = text.decode()
+                text = re.sub(r'<root>\s*(.*)\s*</root>', r'\1', text, re.DOTALL)
+                text = re.sub(r'\s*(<[^>]+>)\s*', r'\1', text, re.DOTALL)
+                text = re.sub(r'\A\s+', '', text, re.DOTALL)
+                text = re.sub(r'\s+\Z', '', text, re.DOTALL)
+                texts.append(text)
         else:
             texts = None
         database[eventName] = {

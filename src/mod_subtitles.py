@@ -14,8 +14,7 @@ from PlayerEvents import g_playerEvents
 MOD_NAME = 'subtitles'
 SWF_FILE = 'ShowText.swf'
 SWF_PATH = '${flash_dir}'
-SOUNDINFO = '${resource_dir}/sound.json'
-SOUNDINFO2 = '${resource_dir}/sound_text.xml'
+SOUNDINFO = '${resource_dir}/sound_text.xml'
 
 
 ignore_event_patterns = [
@@ -25,7 +24,6 @@ ignore_event_patterns = [
 
 g_textField = None
 g_soundInfo = None
-g_soundInfo2 = None
 
 def overrideMethod(cls, method):
     def decorator(handler):
@@ -56,35 +54,9 @@ def _play(orig, self, eventName, *args, **kwargs):
             g_textField.setText(text)
         BigWorld.logInfo(MOD_NAME, 'eventName={}, soundPath={}, text={}'.format(eventName, soundPath, text), None)
     return result
-    
-    try:
-        BigWorld.logInfo(MOD_NAME, 'eventName: {}'.format(eventName), None)
-        event = self._IngameSoundNotifications__events.get(eventName, None)
-        ignore = False
-        for pattern in g_soundInfo['ignore_event_patterns']:
-            if re.match(pattern, eventName):
-                ignore = True
-                break
-        for category, soundDesc in event.iteritems():
-            if category not in ('fx', 'voice') or soundDesc['sound'] == '':
-                continue
-            soundPath = soundDesc['sound']
-            if soundPath in g_soundInfo['sound_texts']:
-                text = g_soundInfo['sound_texts'][soundPath][0]
-            else:
-                if ignore:
-                    continue
-                text = '({})'.format(soundPath)
-            if g_textField:
-                g_textField.setText(text)
-            BigWorld.logInfo(MOD_NAME, 'soundPath={}, text="{}"'.format(soundPath, text), None)
-    except:
-        LOG_CURRENT_EXCEPTION()
-    return result
-
 
 def _getSoundText(eventName):
-    sec = g_soundInfo2.get(eventName, None)
+    sec = g_soundInfo.get(eventName, None)
     soundPath = text = None
     if sec:
         soundPath = sec['soundPath']
@@ -93,20 +65,13 @@ def _getSoundText(eventName):
             text = sec['text'][0]
     return soundPath, text
 
-def _readSoundInfo():
-    def encode_key(data):
-        ascii_encode = lambda x: x.encode('ascii') if isinstance(x, unicode) else x
-        return dict({ ascii_encode(key): value for key, value in data.items() })
-    BigWorld.logInfo(MOD_NAME, 'load config file: {}'.format(SOUNDINFO), None)
-    section = ResMgr.openSection(SOUNDINFO)
-    return json.loads(section.asString, object_hook=encode_key)
 
 def cvt(d):
 	return struct.pack('B', d) if d < 256 else unichr(d)
 
-def _readSoundInfo2():
+def _readSoundInfo():
     database = {}
-    section = ResMgr.openSection(SOUNDINFO2)
+    section = ResMgr.openSection(SOUNDINFO)
     if section is None:
         BigWorld.logInfo(MOD_NAME, 'file not found: {}'.format(SOUNDINFO2), None)
     for sec in section.values():
@@ -141,10 +106,8 @@ def _readSoundInfo2():
 
 def init():
     global g_soundInfo
-    global g_soundInfo2
     global g_textField
     g_soundInfo = _readSoundInfo()
-    g_soundInfo2 = _readSoundInfo2()
     g_textField = TextField()
     g_playerEvents.onAvatarBecomePlayer += g_textField.start
     g_playerEvents.onAvatarBecomeNonPlayer += g_textField.stop

@@ -18,7 +18,7 @@
             "method":   "plain",
             "root":     "res",
             "reldir":   "${resource_dir}",
-            "files":    [ "src/sound.json", "sound_text.xml" ]
+            "files":    [ "sound_text.xml" ]
         }
     ]
 }

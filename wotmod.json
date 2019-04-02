@@ -12,7 +12,7 @@
             "method":   "plain",
             "root":     "res",
             "reldir":   "${flash_dir}",
-            "files":    [ "flash/ShowText/bin/ShowText.swf" ]
+            "files":    [ "flash/ShowText/bin/ShowText.swf", "flash/NewProject/bin/NewProject.swf" ]
         },
         {
             "method":   "plain",

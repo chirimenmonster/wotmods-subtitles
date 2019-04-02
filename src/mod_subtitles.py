@@ -12,7 +12,8 @@ from gui.Scaleform.Flash import Flash
 from PlayerEvents import g_playerEvents
 
 MOD_NAME = 'subtitles'
-SWF_FILE = 'ShowText.swf'
+#SWF_FILE = 'ShowText.swf'
+SWF_FILE = 'NewProject.swf'
 SWF_PATH = '${flash_dir}'
 SOUNDINFO = '${resource_dir}/sound_text.xml'
 
@@ -24,6 +25,7 @@ ignore_event_patterns = [
 
 g_textField = None
 g_soundInfo = None
+g_panel = None
 
 def overrideMethod(cls, method):
     def decorator(handler):
@@ -50,8 +52,10 @@ def _play(orig, self, eventName, *args, **kwargs):
                 if re.match(pattern, eventName):
                     return
             text = '({})'.format(soundPath) if soundPath else '[{}]'.format(eventName)
-        if g_textField:
-            g_textField.setText(text)
+        #if g_textField:
+        #    g_textField.setText(text)
+        if g_panel:
+            g_panel.setText(text)
         BigWorld.logInfo(MOD_NAME, 'eventName={}, soundPath={}, text={}'.format(eventName, soundPath, text), None)
     return result
 
@@ -106,11 +110,45 @@ def _readSoundInfo():
 
 def init():
     global g_soundInfo
-    global g_textField
+    #global g_textField
+    global g_panel
     g_soundInfo = _readSoundInfo()
-    g_textField = TextField()
-    g_playerEvents.onAvatarBecomePlayer += g_textField.start
-    g_playerEvents.onAvatarBecomeNonPlayer += g_textField.stop
+    #g_textField = TextField()
+    #g_playerEvents.onAvatarBecomePlayer += g_textField.start
+    #g_playerEvents.onAvatarBecomeNonPlayer += g_textField.stop
+    g_panel = Panel()
+    g_playerEvents.onAvatarBecomePlayer += g_panel.start
+    g_playerEvents.onAvatarBecomeNonPlayer += g_panel.stop
+
+
+class Panel(object):
+    def __init__(self):
+        flash = Flash(SWF_FILE, path=SWF_PATH)
+        flash.movie.backgroundAlpha = 0.0
+        flash.movie.scaleMode = 'NoScale'
+        flash.component.heightMode = 'PIXEL'
+        flash.component.widthMode = 'PIXEL'
+        flash.component.wg_inputKeyMode = 2
+        flash.component.focus = False
+        flash.component.moveFocus = False
+        self.flash = flash
+        
+    def start(self):
+        screen = GUI.screenResolution()
+        center = ( screen[0] / 2, screen[1] / 2)
+        BigWorld.logInfo(MOD_NAME, '({}, {}), width={}, height={}'.format(center[0], center[1], screen[0], screen[1]), None)
+        self.setPosition(center[0] - 100, center[1] + 280)
+        self.flash.active(True)
+    
+    def stop(self):
+        self.flash.active(False)
+
+    def setPosition(self, x, y):
+        BigWorld.logInfo(MOD_NAME, '({}, {})'.format(x, y), None)
+        self.flash.movie.root.as_setPosition(int(x), int(y))
+
+    def setText(self, text):
+        self.flash.movie.root.as_setMessage(text)
 
 
 class MessageToken(object):
@@ -129,7 +167,6 @@ class MessageToken(object):
         g_textField.disposeToken(self.objId)
         #print self.objId
         g_textField.freeToken(self.objId)
-
 
 
 class TextField(object):

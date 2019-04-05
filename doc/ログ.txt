@@ -1,0 +1,18 @@
+
+scripts/client/gui/Scaleform/framework/entities/View.py での定義
+
+    import logger
+    _logger = logging.getLogger(__name__)
+
+
+ログの設定
+
+    import logger
+    
+    for name in [ 'gui.Scalform.framework.entities.View', 'gui.Scaleform.Flash' ]:
+        logging.getLogger(name).setLevel(logging.DEBUG)
+
+    _logger = logging.getLogger(__name__)
+    _logger.setLevel(logging.DEBUG)
+
+    _logger.debug('%s : %r', MOD_NAME, mesg)

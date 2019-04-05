@@ -1,0 +1,23 @@
+
+AppLifeCycleEvent [gui.shared.events.AppLifeCycleEvent]
+    イベントのタイプ
+        CREATING        AppEntry.__init__() の末尾で発動
+        INITIALIZING    AppEntry.afterCreate() の冒頭で発動
+        INITIALIZED     AppEntry.onAsInitializationCompleted() 内で発動
+        DESTROYED       AppEntry.beforeDelete() の末尾で発動
+    AppLifeCycleEvent(ns, eventType)
+        ns          APP_NAME_SPACE.SF_LOBBY, APP_NAME_SPACE.SF_BATTLE のどちらか [gui.Scaleform.app_factory.APP_NAME_SPACE]
+        eventType   イベントのタイプ CREATING, INITIALIZING, INITIALIZED, DESTROYED のいずれか
+
+
+
+使用例
+    battleEntry 作成を捕捉する
+
+        def onAppInitialized(event):
+            if event.ns != APP_NAME_SPACE.SF_BATTLE:
+                return
+            do_somethng()
+
+        g_eventBus.addListener(AppLifeCycleEvent.INITIALIZED, onAppInitialized)
+

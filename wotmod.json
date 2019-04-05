@@ -2,11 +2,36 @@
     "package":  "${package}",
     "sources":  [
         {
-            "method":   "apply+python",
+            "method":   "apply",
+            "root":     "",
+            "reldir":   "",
+            "files":    [ "meta.xml" ]
+        },
+        {
+            "method":   "python",
             "root":     "res",
             "reldir":   "scripts/client/gui/mods",
             "include":  "\\.py$$",
-            "dirs":     [ "src" ]
+            "exclude":  "modsettings\\.py$$",
+            "dirs":     [ "python" ]
+        },
+        {
+            "method":   "apply+python",
+            "root":     "res",
+            "reldir":   "scripts/client/gui/mods/subtitles",
+            "files":    [ "python/subtitles/modsettings.py" ]
+        },
+        {
+            "method":   "plain",
+            "root":     "res",
+            "reldir":   "gui/flash",
+            "files":    [ "as3/SubtitlesView/bin/SubtitlesView.swf" ]
+        },
+        {
+            "method":   "plain",
+            "root":     "res",
+            "reldir":   "${resource_dir}",
+            "files":    [ "sound_text.xml" ]
         }
     ]
 }

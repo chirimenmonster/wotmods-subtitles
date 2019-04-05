@@ -1,0 +1,93 @@
+g_appLoader [gui.app_loader.g_appLoader]
+    getDefBattleApp()
+        使用例
+            battleEntry = g_appLoader.getDefBattleApp()
+        概要
+            戦闘時であれば BattleEntry のインスタンスを返す
+                BattleEntry は gui.Scaleform.battle_entry で定義
+
+BattleEntry　[gui.Scaleform.battle_entry.BattleEntry]
+    AppEntry [gui.Scaleform.framework.application.AppEntry] のサブクラス
+        奥行方向の位置は DEPTH_OF_Battle [gui.DEPTH_OF_Battle] で定義される (= 0.1)
+    loadView(loadParams)
+        定義 gui.Scaleform.framework.application.AppEntry
+        使用例
+            battleEntry.loadView(SFViewLoadParams(view_alias))              view_alias に対する view が1つの場合
+            battleEntry.loadView(SFViewLoadParams(view_alias, view_name))   view_alias に対し複数の view を作成する必要がある場合
+        概要
+            内部で _containerMgr.load() を実行し、loadParams で指定された view のインスタンス作成、初期設定、登録を行う
+            SFViewLoadParams [gui.Scaleform.framework.managers.loaders.SFViewLoadParams] で loadParams を作成する
+            作成した view に対するキーは ViewKey(view_alias), ViewKey(view_alias, view_name) のようになる
+            値は返さない
+    _containerMgr
+        ContainerManager [gui.Scaleform.framework.managers.containers.ContainerManager] のインスタンス
+        概要
+            view の管理を行う
+            外部からはプロパティ containerManager で取得する
+            _createContainerManager() で作成される
+                view のタイプ別に view を管理する container がある
+                    ViewTypes.DEFAULT (ViewTypes.VIEW と同じ)
+                    ViewTypes.COURSOR
+                    ViewTypes.WINDOW
+                    ViewTypes.TOP_WINDOW
+                    ViewTypes.SERVICE_LAYOUT
+                    ViewTypes.OVERLAY
+                view のタイプは view の定義時に ViewSettings() 内で指定した ViewTypes のどれか
+
+ContainerManager    （BattleEntry 内に作成される場合）
+    ContainerManager(loader, *containers)
+        loader      LoaderManager のインスタンスが渡される battleEntry._loadMgr
+            LoaderManager [gui.Scaleform.framework.managers.loaders.LoaderManager]
+            self._loadMgr は BattleEntry の _createLoaderManager() で作成される
+        containers  ViewContainer のサブクラスのインスタンスのリストが渡される
+            view のタイプ別に別れている
+    load(loadParams)
+        loadParams で指定された view の読み込みを実行（まだ読み込まれていなければ）
+        読み込み済みでなければ self.__loader.loadView(loadParams) が実行される
+            self.__loader はコンストラクタの第1引数 loader
+    getViewByKey(viewKey)
+        使用例
+            pyEntity = battleEntry.containerManager.getViewByKey(ViewKey(view_alias))
+            pyEntity = battleEntry.containerManager.getViewByKey(ViewKey(view_alias, view_name))
+        概要
+            viewKey で指定した view (pyEntity) を取得する
+            viewKey は ViewKey [gui.Scaleform.framework.entities.View.ViewKey] のインスタンス
+                ViewKey(alias)          view 作成時に SFViewLoadParams(alias) と指定した場合
+                ViewKey(alias, name)    view 作成時に SFViewLoadParams(alias, name) と指定した場合
+
+LoaderManagr        （BattleEntry 内に作成される場合）
+    LoaderManager(app)
+        app として BattleEntry からは自身のインスタンスが渡される battleEntry
+    loadView(loadParams)
+        loadParams で指定された view の読み込みを行う
+        loadParams.uiImpl の値によって実行に __doLoadUBView(), __doLoadSFView() が選択される
+            UIFrameworkImpl.UNBOUND
+            UIFrameworkImpl.SCALEFORM
+    __doLoadSFView(loadParams)
+        pyEntity を返す
+        pyEntity は g_entitiesFactories.factory(loadingParamas.viewkey.name) の返り値
+        g_entitiesFactories は EntitiesFactories　[gui.Scaleform.framework.factories.EntitiesFactories] のインスタンス
+
+EntitiesFactories
+    factory(alias)
+        alias (viewalias) に対応した設定をもとに entity (pyEntity) を作成する
+            ViewTypes.COMPONENT であれば DAAPIModuleFactory.create(settings) が、、
+            他の ViewTypes であれば ViewFactory.creat(settings) が使用される
+            いずれも EntityFactory [gui.Scaleform.framework.factories.EntityFactory] のサブクラス
+
+EntityFactory
+    create(settings)
+        settings.clazz のインスタンスを pyEntity として返す
+
+View, Flash の __del__
+    オブジェクトの参照カウンタが 0 となったときに __del__ メソッドが呼び出される
+    グローバル変数が参照を持ってると __del__ が呼ばれない
+    weakref を使用すると弱参照を作成できる。弱参照であれば参照カウンタにカウントされず、__del__ メソッドが呼ばれる
+        import weakref
+        ref_view = weakref.proxy(view)
+
+
+battleEntity = g_appLoader.getDefBattleApp()
+pyEntity = battleEntity.containerManager.getViewByKey(ViewKeys(VIEW_ALIAS))
+pyEntity.as_setMessageS(text)
+

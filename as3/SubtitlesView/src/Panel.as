@@ -1,4 +1,4 @@
-package
+package 
 {
 	import flash.display.Sprite;
 	import flash.display.StageScaleMode;
@@ -13,7 +13,7 @@ package
 	 * ...
 	 * @author Chirimen
 	 */
-	public class Main extends Sprite 
+	public class Panel extends Sprite
 	{
 		private var poolTextField:Array = [];
 		private var activeTextField:Array = [];
@@ -25,22 +25,19 @@ package
 		
 		public var stats:Array;
 		
-		public function Main() 
+		public function stop() : void
 		{
-			if (stage) init();
-			else addEventListener(Event.ADDED_TO_STAGE, init);
+			for each (var textField:FadeoutText in poolTextField) {
+				textField.stop();
+				textField.removeEventListener("FIN_FADEOUT", onFinFadeout);
+				removeChild(textField);
+			}
+			poolTextField = null;
+			activeTextField = null;
+			inactiveTextField = null;
 		}
 		
-		private function init(e:Event = null):void 
-		{
-			removeEventListener(Event.ADDED_TO_STAGE, init);
-			// entry point
-
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-		}
-
-		private function onFinFadeout(e:Event):void 
+		private function onFinFadeout(e:Event) : void 
 		{
 			var textField:FadeoutText = e.target as FadeoutText;
 			textField.removeEventListener(Event.ENTER_FRAME, onFinFadeout);
@@ -49,25 +46,25 @@ package
 			layout();
 		}
 		
-		private function reposition():void
+		private function reposition() : void
 		{
 			x = anchorX;
 			y = anchorY - panelHeight;
 		}
 		
-		public function as_setPosition(newX:int = 0, newY:int = 0):void
+		public function setPosition(newX:int = 0, newY:int = 0) : void
 		{
 			anchorX = newX;
 			anchorY = newY;
 			reposition();
 		}
 		
-		public function as_setMessage(message:String):void
+		public function setMessage(message:String) : void
 		{
 			setNewMessage(message);
 		}
 		
-		public function setNewMessage(message:String):void
+		public function setNewMessage(message:String) : void
 		{
 			var textField:FadeoutText = allocateTextField();
 			textField.init();
@@ -77,7 +74,7 @@ package
 			layout();
 		}
 		
-		private function layout():void
+		private function layout() : void
 		{
 			var y:int = 0;
 			var width:int = 0;
@@ -92,7 +89,7 @@ package
 			reposition();
 		}
 		
-		private function allocateTextField():FadeoutText
+		private function allocateTextField() : FadeoutText
 		{
 			var textField:FadeoutText;
 
@@ -107,7 +104,7 @@ package
 			return textField;
 		}
 		
-		private function freeTextField(textField:FadeoutText):void
+		private function freeTextField(textField:FadeoutText) : void
 		{
 			var index:int = activeTextField.indexOf(textField);
 			if (index < 0) {

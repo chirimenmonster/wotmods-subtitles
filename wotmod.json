@@ -2,6 +2,12 @@
     "package":  "${package}",
     "sources":  [
         {
+            "method":   "apply",
+            "root":     "",
+            "reldir":   "",
+            "files":    [ "meta.xml" ]
+        },
+        {
             "method":   "python",
             "root":     "res",
             "reldir":   "scripts/client/gui/mods",

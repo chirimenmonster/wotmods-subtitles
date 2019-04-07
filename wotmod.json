@@ -25,7 +25,7 @@
             "method":   "plain",
             "root":     "res",
             "reldir":   "gui/flash",
-            "files":    [ "as3/SubtitlesView/bin/SubtitlesView.swf" ]
+            "files":    [ "as3/SubtitlesView/bin/SubtitlesView.swf", "as3/SelectorView/bin/SelectorView.swf" ]
         },
         {
             "method":   "plain",

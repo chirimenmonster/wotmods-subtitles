@@ -1,0 +1,99 @@
+ModsList
+
+ModsListButton
+        configUI()
+        onDispose()
+        draw()
+        nextFrameAfterPopulateHandler()
+        buttonBlinking()
+        compareBasketVisibility()
+        setStaticData()
+    ModsListButtonMeta
+            onButtonClickS()
+            as_buttonBlinking()
+            as_compareBasketVisibility()
+            as_setStaticData()
+            buttonBlinking()
+            compareBasketVisibility()
+            setStaticData()
+        AbstractView (net.wg.infrastructure.base.AbstractView)
+
+ModsListPopover
+        configUI()
+        onDispose()
+        draw()
+        setStaticData()
+        setModsData()
+    ModsListPopoverMeta
+            invokeModificationS()
+            getModListS()
+            as_setStaticData()
+            as_setModsData()
+            setStaticData()
+            setModsData()
+        SmartPopOverView (net.wg.infrastructure.base.SmartPopOverView)
+
+
+ModsListBlinkingButton
+    SoundButtonEx (net.wg.gui.components.controls.SoiundButtonEx)
+
+ModsListItemRenderer
+    SoundListItemRenderer (net.wg.gui.components.controls.SoundListItemRenderer)
+    
+
+ModsListItemRendererVO
+    DAAPIDataClass (net.wg.data.daapi.base.DAAPIDataClass)
+
+ModsListModsVO
+        onDataWrite()
+        onDispose()
+    DAAPIDataClass  (net.wg.data.daapi.base.DAAPIDataClass)
+    
+ModsListStaticDataVO
+    DAAPIDataClass  (net.wg.data.daapi.base.DAAPIDataClass)
+
+    
+    
+ModsListButtonView
+        _popuate()
+        _dispose()
+        onButtonClick()
+        onFocusIn()
+    ModsListButtonViewMeta
+            onButtonClik()
+            as_buttonBlinkingS()
+            as_compareBasketVisibilityS()
+            as_setStaticDataS()
+        View (gui.Scaleform.framework.entities.View)
+
+ModsListPopoverView
+        _populate()
+        _dispose()
+        getModsList()
+        invokedModification()
+    ModsListPopoverViewMeta
+            getModsList()
+            invokedMod()
+            as_setModsDataS()
+            as_setStaticDataS()
+        AbstractPopOverView (gui.Scaleform.framework.entities.abstract.AbstractPopOverView)
+
+
+buttonSettings = ViewSettings(
+    MODS_LIST_API_BUTTON_ALIAS,
+    ModsListButtonView,
+    'modsListButton.swf',
+    ViewType.WINDOW,
+    None,
+    ScopeTemplates.GLOBAL_SCOPE
+)
+
+popoverSettings = GroupedViewSettings(
+    MODS_LIST_API_POPOVER_ALIAS,
+    modsListPopoverView,
+    'modsListPopover.swf,,
+    ViewTypes.WINDOW,
+    MODS_LIST_API_POPOVER_ALIAS,
+    MODS_LIST_API_POPOVER_ALIAS,
+    ScopeTemplates.DEFAULT_SCOPE
+)

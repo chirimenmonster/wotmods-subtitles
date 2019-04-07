@@ -7,6 +7,8 @@ import weakref
 import BigWorld
 import GUI
 import ResMgr
+import game
+import Keys
 from debug_utils import LOG_CURRENT_EXCEPTION
 from gui.shared import g_eventBus, events
 from gui.app_loader import g_appLoader
@@ -16,8 +18,8 @@ from gui.Scaleform.framework.entities.View import View, ViewKey
 from gui.Scaleform.framework.managers.loaders import SFViewLoadParams
 from gui.IngameSoundNotifications import IngameSoundNotifications
 
-from subtitles.modsettings import MOD_NAME, SOUNDINFO, VIEW_ALIAS
-from subtitles.viewsettings import VIEW_SETTINGS
+from subtitles.modsettings import MOD_NAME, SOUNDINFO, VIEW_ALIAS, SELECTOR_VIEW_ALIAS
+from subtitles.viewsettings import VIEW_SETTINGS, SELECTOR_VIEW_SETTINGS
 
 
 ignore_event_patterns = [
@@ -36,6 +38,19 @@ def overrideMethod(cls, method):
         else:
             setattr(cls, method, property(newm))
     return decorator
+
+
+@overrideMethod(game, 'handleKeyEvent')
+def _handleKeyEvent(orig, event):
+    ret = orig(event)
+    try:
+        if event.isKeyDown() and not event.isRepeatedEvent():
+            if event.key == Keys.KEY_F12:
+                print '### press F12'
+                g_selector.start()
+    except:
+        LOG_CURRENT_EXCEPTION()
+    return ret
 
 
 @overrideMethod(IngameSoundNotifications, 'play')
@@ -109,6 +124,7 @@ def init():
     global g_soundInfo
     g_soundInfo = _readSoundInfo()
     g_entitiesFactories.addSettings(VIEW_SETTINGS)
+    g_entitiesFactories.addSettings(SELECTOR_VIEW_SETTINGS)
     g_eventBus.addListener(events.AppLifeCycleEvent.INITIALIZED, g_control.onAppInitialized)
 
 class Control(object):
@@ -128,4 +144,17 @@ class Control(object):
         if self.__pyEntity:
             self.__pyEntity.as_setMessageS(message)
 
+
+class Selector(object):
+    def start(self):
+        app = g_appLoader.getDefLobbyApp()
+        if not app:
+            return
+        app.loadView(SFViewLoadParams(SELECTOR_VIEW_ALIAS))
+        pyEntity = app.containerManager.getViewByKey(ViewKey(SELECTOR_VIEW_ALIAS))
+        self.__pyEntity = weakref.proxy(pyEntity)
+        BigWorld.logInfo(MOD_NAME, 'pyEntity: {}'.format(pyEntity), None)
+
+
 g_control = Control()
+g_selector = Selector()

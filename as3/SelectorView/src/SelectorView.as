@@ -4,6 +4,7 @@ package
     //    "guiControlsLobbyBattle.swf"
     //]));
 	
+	import net.wg.gui.interfaces.ISoundButton;
 	import net.wg.infrastructure.base.AbstractWindowView;
 	import net.wg.infrastructure.base.AbstractView;
 	import net.wg.infrastructure.base.SmartPopOverView
@@ -15,6 +16,7 @@ package
 	import net.wg.gui.components.advanced.ButtonBarEx;
 	
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.utils.getQualifiedClassName;
 	
 	import scaleform.clik.controls.Button;
@@ -44,6 +46,10 @@ package
 		public var button:SoundButton = null;
 		public var buttonList:Array = [];
 		
+		private var wwsoundData:Array = null;
+		
+		public var onButtonClickS:Function = null;
+		
 		public function SelectorView() : void
 		{
 			super();
@@ -56,44 +62,43 @@ package
 			textFormat.color = 0xFFFF00;
 		}
 		
-		private function createButtons() : void
+		private function createButtons(data:Array) : void
 		{
 			var button:SoundButton;
 			var label:String = "";
 			var posY:int = 0;
+			var bWidth:int = 480;
 			var bHeight:int = 25;
-			for (var i:int = 0; i < 10; i++) {
-				label = 'button_' + i;
-				posY = i * bHeight;
+			
+			for each (var name:String in data) {
+				DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "createButton", name);
+				label = name;
 				button = App.utils.classFactory.getComponent("ButtonNormal", SoundButton, {
-					width: 240,
+					width: bWidth,
 					height: bHeight,
 					x: 0,
 					y: posY,
 					label: label
 				}) as SoundButton;
 				if (button) {
+					button.addEventListener(MouseEvent.CLICK, onButtonClick);
 					addChild(button);
 					buttonList.push(button);
 				}
+				posY += bHeight;
 			}
-			width = 240;
-			height = bHeight * 10;
+			width = bWidth;
+			height = posY;
 			DebugUtils.LOG_DEBUG_FORMAT("%s: (%r, %r), width=%r, height=%r", className, x, y, width, height);
 		}
 		
 		override protected function onPopulate() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onPopulate");
-			
-			createButtons();
+			createButtons(wwsoundData);
+			window.title = "Sound Test";
 			
 			super.onPopulate();
-
-			//window.width = 320;
-			//window.height = 180;
-			window.title = "Test Window";
-
 			DebugUtils.LOG_DEBUG_FORMAT("%s: (%r, %r), width=%r, height=%r", className, x, y, width, height);
 			
 			//tabs = new ButtonBarEx();
@@ -128,7 +133,7 @@ package
 		override protected function configUI() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "configUI");
-			super.configUI();			
+			super.configUI();
 		}
 		
 		override protected function draw() :void
@@ -157,6 +162,22 @@ package
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "TryClosing");
 			dispose();
 		}
+		
+		public function onButtonClick(event:Event) : void
+		{
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onButtonClick");
+			var button:ISoundButton = event.target as SoundButton;
+			DebugUtils.LOG_DEBUG_FORMAT("%s: button=%s", className, button.label);
+			onButtonClickS(button.label);
+			DebugUtils.LOG_DEBUG_FORMAT("%s: button=%s", className, button.label);
+		}
+		
+		public function as_setConfig(data:Array) : void
+		{
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %r", className, "as_setConfig", data.length);
+			wwsoundData = data;
+		}
+		
 	}
 	
 }

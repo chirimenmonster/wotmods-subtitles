@@ -20,6 +20,7 @@ from gui.IngameSoundNotifications import IngameSoundNotifications
 
 from subtitles.modsettings import MOD_NAME, SOUNDINFO, VIEW_ALIAS, SELECTOR_VIEW_ALIAS
 from subtitles.viewsettings import VIEW_SETTINGS, SELECTOR_VIEW_SETTINGS
+from subtitles.selectorview import play
 
 
 ignore_event_patterns = [
@@ -48,6 +49,9 @@ def _handleKeyEvent(orig, event):
             if event.key == Keys.KEY_F12:
                 print '### press F12'
                 g_selector.start()
+            elif event.key == Keys.KEY_F11:
+                print '### press F11'
+                play('vo_target_lost')
     except:
         LOG_CURRENT_EXCEPTION()
     return ret
@@ -81,7 +85,6 @@ def _getSoundText(eventName):
         if sec['text'] and sec['text'] is not None:
             text = sec['text'][0]
     return soundPath, text
-
 
 def cvt(d):
     return struct.pack('B', d) if d < 256 else unichr(d)

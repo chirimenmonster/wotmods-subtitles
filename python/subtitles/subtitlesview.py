@@ -16,6 +16,17 @@ _logger.setLevel(logging.DEBUG)
 
 
 class SubtitlesView(View):
+
+    def __onLogGui(self, logType, msg, *kargs):
+        _logger.debug('%s.GUI: %r, %r', str(logType), msg, kargs)
+
+    def __onLogGuiFormat(self, logType, msg, *kargs):
+        _logger.debug('%s.GUI: %s', str(logType), msg % kargs)
+
+    def afterCreate(self):
+        self.addExternalCallback('debug.LOG_GUI', self.__onLogGui)
+        self.addExternalCallback('debug.LOG_GUI_FORMAT', self.__onLogGuiFormat)
+
     def _populate(self):
         BigWorld.logInfo(MOD_NAME, '_populate', None)
         super(SubtitlesView, self)._populate()

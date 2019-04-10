@@ -55,7 +55,14 @@ package
 		
 		private var _isLibrariesLoaded:Boolean = false;
 		private var _currentSelectedData:String = null;
+		private var _currentSelected:Object = null;
 
+		private var _settings:Object = null;
+		private var _soundModesMenu:DropdownMenu = null;
+		private var _genderSwitchMenu:DropdownMenu = null;
+		private var _nationsMenu:DropdownMenu = null;
+		private var _soundEventsMenu:DropdownMenu = null;
+		
 		public function SelectorView() : void
 		{
 			App.instance.loaderMgr.addEventListener(LibraryLoaderEvent.LOADED_COMPLETED, onLoadedCompleted);
@@ -88,7 +95,10 @@ package
 			textFormat.align = TextFormatAlign.LEFT;
 			textFormat.color = 0xFFFF00;
 
-			createDropdownMenu(wwsoundData);
+			createSoundModesMenu(_settings.soundModes);
+			createGenderSwitchMenu(_settings.genderSwitch);
+			createNationsMenu(_settings.nations);
+			createSoundEventsMenu(_settings.events);
 			createPlayButton();
 		}
 		
@@ -152,7 +162,13 @@ package
 		private function onPlayButtonClick() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onButtonClick");
-			onButtonClickS(_currentSelectedData);
+			_currentSelected = {
+				soundMode: 		_soundModesMenu.dataProvider[_soundModesMenu.selectedIndex],
+				genderSwitch:	_genderSwitchMenu.dataProvider[_genderSwitchMenu.selectedIndex],
+				nation: 		_nationsMenu.dataProvider[_nationsMenu.selectedIndex],
+				soundEvent:		_soundEventsMenu.dataProvider[_soundEventsMenu.selectedIndex]	
+			};
+			onButtonClickS(_currentSelected);
 		}
 		
 		private function createPlayButton() : void
@@ -179,25 +195,88 @@ package
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "onDropdownListIndexChange", _currentSelectedData);
 		}
 		
-		private function createDropdownMenu(data:Array) : void
-        {
-            var dataProvider:DataProvider = new DataProvider(data);
-            var setting:Object = {
-				x:				0,
-				y:				24,
-                width:          480,
-                itemRenderer:   "DropDownListItemRendererSound",
-                dropdown:       "DropdownMenu_ScrollingList",
-                dataProvider:   dataProvider,
-                menuRowCount:   dataProvider.length,
-                scrollBar:      "ScrollBar",
+		private function createSoundModesMenu(data:Array) : void
+		{
+			var dataProvider:DataProvider = new DataProvider(data);
+			var setting:Object = {
+				x:					0,
+				y:					24,
+				width:				120,
+				itemRenderer:		"DropDownListItemRendererSound",
+				dropdown:			"DropdownMenu_ScrollingList",
+				dataProvider:		dataProvider,
+				menuRowCount:		dataProvider.length,
+				scrollBar:			"ScrollBar",
 				thumbOffsetBottom:	0,
 				thumbOffsetTop:		0
 			};
-            dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
-            dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
-			dropdownMenu.scrollBar
-            addChild(dropdownMenu);
+			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+			addChild(dropdownMenu);
+			_soundModesMenu = dropdownMenu;
+		}
+
+		private function createGenderSwitchMenu(data:Array) : void
+		{
+			var dataProvider:DataProvider = new DataProvider(data);
+			var setting:Object = {
+				x:					120,
+				y:					24,
+				width:				80,
+				itemRenderer:		"DropDownListItemRendererSound",
+				dropdown:			"DropdownMenu_ScrollingList",
+				dataProvider:		dataProvider,
+				menuRowCount:		dataProvider.length,
+				scrollBar:			"ScrollBar",
+				thumbOffsetBottom:	0,
+				thumbOffsetTop:		0
+			};
+			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+			addChild(dropdownMenu);
+			_genderSwitchMenu = dropdownMenu;
+		}
+
+		private function createNationsMenu(data:Array) : void
+		{
+			var dataProvider:DataProvider = new DataProvider(data);
+			var setting:Object = {
+				x:					200,
+				y:					24,
+				width:				80,
+				itemRenderer:		"DropDownListItemRendererSound",
+				dropdown:			"DropdownMenu_ScrollingList",
+				dataProvider:		dataProvider,
+				menuRowCount:		dataProvider.length,
+				scrollBar:			"ScrollBar",
+				thumbOffsetBottom:	0,
+				thumbOffsetTop:		0
+			};
+			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+			addChild(dropdownMenu);
+			_nationsMenu = dropdownMenu;
+		}
+
+		private function createSoundEventsMenu(data:Array) : void
+		{
+			var dataProvider:DataProvider = new DataProvider(data);
+			var setting:Object = {
+				x:					0,
+				y:					48,
+				width:				480,
+				itemRenderer:		"DropDownListItemRendererSound",
+				dropdown:			"DropdownMenu_ScrollingList",
+				dataProvider:		dataProvider,
+				menuRowCount:		dataProvider.length,
+				scrollBar:			"ScrollBar",
+				thumbOffsetBottom:	0,
+				thumbOffsetTop:		0
+			};
+			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+			addChild(dropdownMenu);
+			_soundEventsMenu = dropdownMenu;
 		}
 
 		private function createScrollingList() : void
@@ -282,10 +361,10 @@ package
 			DebugUtils.LOG_DEBUG_FORMAT("%s: button=%s", className, button.label);
 		}
 		
-		public function as_setConfig(data:Array) : void
+		public function as_setConfig(data:Object) : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "as_setConfig");
-			wwsoundData = data;
+			_settings = data;
 		}
 		
 	}

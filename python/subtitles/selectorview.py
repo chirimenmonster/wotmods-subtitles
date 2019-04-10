@@ -6,8 +6,9 @@ from functools import partial
 import BigWorld
 import ResMgr
 import GUI
-import SoundGroups
 import WWISE
+import nations
+import SoundGroups
 from gui.Scaleform.framework import ViewSettings, ViewTypes, ScopeTemplates
 from gui.Scaleform.framework.entities.View import View
 
@@ -26,6 +27,12 @@ class SelectorView(View):
 
     def __init__(self):
         super(SelectorView, self).__init__()
+        self.__soundModes = sorted(SoundGroups.g_instance.soundModes.modes.keys())
+        self.__genderSwicth = [
+            { 'label': 'male', 'data': SoundGroups.CREW_GENDER_SWITCHES.MALE },
+            { 'label': 'female', 'data': SoundGroups.CREW_GENDER_SWITCHES.FEMALE }
+        ]
+        self.__nations = list(nations.NAMES)
         self.__readConfig()
 
     def __onLogGui(self, logType, msg, *kargs):
@@ -42,7 +49,13 @@ class SelectorView(View):
 
     def _populate(self):
         BigWorld.logInfo(MOD_NAME, '_populate', None)
-        self.flashObject.as_setConfig(self.__events)
+        settings = {
+            'soundModes':       self.__soundModes,
+            'genderSwitch':     self.__genderSwicth,
+            'nations':          self.__nations,
+            'events':           self.__events
+        }
+        self.flashObject.as_setConfig(settings)
         super(SelectorView, self)._populate()
 
     def __readConfig(self):
@@ -63,9 +76,10 @@ class SelectorView(View):
     def getConfig(self):
         return self.__events;
     
-    def onButtonClickS(self, label):
-        print 'onButtonClickS: {}'.format(label);
-        play(label)
+    def onButtonClickS(self, data):
+        print 'onButtonClickS: ', data, data.genderSwitch.data;
+        setNationGender(data.nation, data.genderSwitch.data)
+        play(data.soundEvent)
         #BigWorld.callback(1.0, partial(play, label));
         
     def onTryClosing(self):
@@ -77,17 +91,10 @@ class SelectorView(View):
         self.destroy()
 
 
+def setNationGender(nation, genderSwitch):
+    SoundGroups.g_instance.soundModes.setCurrentNation(nation, genderSwitch)
+
 def play(soundPath):
-    masterVolume = SoundGroups.g_instance.getMasterVolume()
-    print 'soundPath={}, volume={}, {}'.format(soundPath, masterVolume, SoundGroups.g_instance.getVolume('gui'))
-    #SoundGroups.g_instance.enableLobbySounds(True)
-    #SoundGroups.g_instance.enableArenaSounds(True)
-    #SoundGroups.g_instance.enableVoiceSounds(True)
-    #sound = SoundGroups.g_instance.getSound2D(soundPath)
-    #if sound is not None:
-    #    sound.setCallback(onSoundEnd)
-    #    BigWorld.callback(0.1, sound.play)
-    #    print 'soundPath={}, sound={}, volume={}, {}'.format(soundPath, sound, masterVolume, SoundGroups.g_instance.getVolume('gui'))
     SoundGroups.g_instance.playSound2D(soundPath)
 
 def onSoundEnd():

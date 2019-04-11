@@ -1,23 +1,11 @@
 package
 {
-	import flash.display.Scene;
-	import net.wg.gui.interfaces.ISoundButton;
 	import net.wg.infrastructure.base.AbstractWindowView;
-	import net.wg.infrastructure.base.AbstractView;
-	import net.wg.infrastructure.base.SmartPopOverView
-	import net.wg.infrastructure.events.ListDataProviderEvent;
+	import net.wg.infrastructure.events.LibraryLoaderEvent;
 
 	import net.wg.gui.components.controls.ScrollBar;
 	import net.wg.gui.components.controls.SoundButton;
 	import net.wg.gui.components.controls.SoundListItemRenderer;
-	import net.wg.gui.components.controls.SoundButtonEx;
-	import net.wg.gui.components.advanced.ButtonBarEx;
-	
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import net.wg.infrastructure.events.LibraryLoaderEvent;
-	
-	import flash.utils.getQualifiedClassName;
 	
 	import scaleform.clik.controls.Button;
 	import scaleform.clik.controls.ListItemRenderer;
@@ -26,45 +14,36 @@ package
 	import scaleform.clik.data.ListData;
 	import scaleform.clik.data.DataProvider;
 	import scaleform.clik.events.ListEvent;
-	
+
+	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.text.TextFormatAlign;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * ...
 	 * @author Chirimen
 	 */
-	public class SelectorView extends AbstractWindowView 
+	public class SelectorView extends AbstractWindowView
 	{
-		public var className:String = null;
-		private var listItem:ListItemRenderer = null;
-		private var textFormat:TextFormat = new TextFormat();
-		
-		public var scrollBar:ScrollBar = null;
-		public var scrollingList:ScrollingList = null;
-		
-		public var tabs:ButtonBarEx = null;
-		public var button:SoundButton = null;
-		public var buttonList:Array = [];
-		
-		public var dropdownMenu:DropdownMenu = null;
-		private var wwsoundData:Array = null;
-		
-		public var onButtonClickS:Function = null;
-		
+		private var className:String = null;
 		private var _isLibrariesLoaded:Boolean = false;
-		private var _currentSelectedData:String = null;
-		private var _currentSelected:Object = null;
-
 		private var _settings:Object = null;
 		private var _soundModesMenu:DropdownMenu = null;
 		private var _genderSwitchMenu:DropdownMenu = null;
 		private var _nationsMenu:DropdownMenu = null;
 		private var _soundEventsMenu:DropdownMenu = null;
 		
+		public var onButtonClickS:Function = null;
+		public var playSoundEvent:Function = null;
+        public var getDropdownMenuData:Function = null;
+
 		public function SelectorView() : void
 		{
+			className = getQualifiedClassName(this);
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "constructor");
 			App.instance.loaderMgr.addEventListener(LibraryLoaderEvent.LOADED_COMPLETED, onLoadedCompleted);
 			App.instance.loaderMgr.loadLibraries(Vector.<String>([
 				"guiControlsLobby.swf", 
@@ -74,125 +53,73 @@ package
 				"guiControlsLogin.swf", 
 				"guiControlsLoginBattle.swf", 
 				"guiControlsLoginBattleDynamic.swf"
-			]));			
+			]));
 			super();
-			className = getQualifiedClassName(this);
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "constructor");
+            width = 480;
+            height = 200;
+            window.title = "Sound Test";
 		}
 
+		public function as_setConfig(menuData:Object) : void
+		{
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "as_setConfig");
+			_settings = menuData;
+		}
+		
 		private function onLoadedCompleted(event:LibraryLoaderEvent) : void
 		{
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onLoadedCompleted");
 			App.instance.loaderMgr.removeEventListener(LibraryLoaderEvent.LOADED, onLoadedCompleted);
 			_isLibrariesLoaded = true;
 			initControls();
 		}
 
-		public function initControls() : void
+		private function onPlayButtonClick() : void
+		{
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onButtonClick");
+			var currentSelected:Object = {
+				soundMode: 		_soundModesMenu.dataProvider[_soundModesMenu.selectedIndex],
+				genderSwitch:	_genderSwitchMenu.dataProvider[_genderSwitchMenu.selectedIndex],
+				nation: 		_nationsMenu.dataProvider[_nationsMenu.selectedIndex],
+				soundEvent:		_soundEventsMenu.dataProvider[_soundEventsMenu.selectedIndex]
+			};
+			//onButtonClickS(currentSelected);
+            playSoundEvent(currentSelected);
+		}
+
+		private function onDropdownListIndexChange(event:Event) : void
+		{
+			var target:DropdownMenu = event.target as DropdownMenu;
+			var selected:* = target.dataProvider[target.selectedIndex];
+			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %r", className, "onDropdownListIndexChange", selected);
+		}
+
+		private function initControls() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "initControls");
-			textFormat.font = "$FieldFont";
-			textFormat.size = 14;
-			textFormat.align = TextFormatAlign.LEFT;
-			textFormat.color = 0xFFFF00;
-
+            getDropdownMenuData();
 			createSoundModesMenu(_settings.soundModes);
 			createGenderSwitchMenu(_settings.genderSwitch);
 			createNationsMenu(_settings.nations);
 			createSoundEventsMenu(_settings.events);
 			createPlayButton();
-		}
-		
-		private function createButtons(data:Array) : void
-		{
-			var button:SoundButton;
-			var label:String = "";
-			var posY:int = 0;
-			var bWidth:int = 480;
-			var bHeight:int = 25;
-			
-			for each (var name:String in data) {
-				label = name;
-				button = App.utils.classFactory.getComponent("ButtonNormal", SoundButton, {
-					width: bWidth,
-					height: bHeight,
-					x: 0,
-					y: posY,
-					label: label
-				}) as SoundButton;
-				if (button) {
-					button.addEventListener(MouseEvent.CLICK, onButtonClick);
-					addChild(button);
-					buttonList.push(button);
-				}
-				posY += bHeight;
-			}
-			width = bWidth;
-			height = posY;
-			DebugUtils.LOG_DEBUG_FORMAT("%s: (%r, %r), width=%r, height=%r", className, x, y, width, height);
-		}
-		
-		private function createButtonItems(data:Array) : Array
-		{
-			var button:ListItemRenderer;
-			var label:String = "";
-			var posY:int = 0;
-			var bWidth:int = 480;
-			var bHeight:int = 25;
-			
-			var i:uint = 0;
-			var buttonList:Array = new Array();
-			for each (var name:String in data) {
-				DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "createButtonItems", name);
-				label = name;
-				button = App.utils.classFactory.getComponent("DropDownListItemRendererSound", SoundListItemRenderer, {
-					width: bWidth,
-					height: bHeight,
-					label: name					
-				});
-				//button.width = bWidth;
-				//button.height = bHeight;
-				//button.label = label;
-				//button.setListData(new ListData(i, label));
-				buttonList.push(button);
-				i++;
-			}
-			return buttonList;
+            //createScrollingList(_settings.soundModes);
 		}
 
-		private function onPlayButtonClick() : void
-		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onButtonClick");
-			_currentSelected = {
-				soundMode: 		_soundModesMenu.dataProvider[_soundModesMenu.selectedIndex],
-				genderSwitch:	_genderSwitchMenu.dataProvider[_genderSwitchMenu.selectedIndex],
-				nation: 		_nationsMenu.dataProvider[_nationsMenu.selectedIndex],
-				soundEvent:		_soundEventsMenu.dataProvider[_soundEventsMenu.selectedIndex]	
-			};
-			onButtonClickS(_currentSelected);
-		}
-		
 		private function createPlayButton() : void
 		{
 			var setting:Object = {
-				label: "Play",
-				width: 80,
-				height: 24,
-				x: 0,
-				y: 0
+				label:      "Play",
+				width:      80,
+				height:     24,
+				x:          0,
+				y:          0
 			}
-			var button:SoundButton;
-			button = App.utils.classFactory.getComponent("ButtonNormal", SoundButton, setting);
+			var button:SoundButton = App.utils.classFactory.getComponent("ButtonNormal", SoundButton, setting);
 			if (button) {
 				button.addEventListener(MouseEvent.CLICK, onPlayButtonClick);
 				addChild(button);
 			}
-		}
-		
-		private function onDropdownListIndexChange(event:Event) : void
-		{
-			var target:DropdownMenu = event.target as DropdownMenu;
-			_currentSelectedData = target.dataProvider[dropdownMenu.selectedIndex];
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "onDropdownListIndexChange", _currentSelectedData);
 		}
 		
 		private function createSoundModesMenu(data:Array) : void
@@ -210,10 +137,12 @@ package
 				thumbOffsetBottom:	0,
 				thumbOffsetTop:		0
 			};
-			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
-			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
-			addChild(dropdownMenu);
-			_soundModesMenu = dropdownMenu;
+			var dropdownMenu:DropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+            if (dropdownMenu) {
+                //dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+                addChild(dropdownMenu);
+                _soundModesMenu = dropdownMenu;
+            }
 		}
 
 		private function createGenderSwitchMenu(data:Array) : void
@@ -231,10 +160,12 @@ package
 				thumbOffsetBottom:	0,
 				thumbOffsetTop:		0
 			};
-			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
-			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
-			addChild(dropdownMenu);
-			_genderSwitchMenu = dropdownMenu;
+			var dropdownMenu:DropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+            if (dropdownMenu) {
+                //dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+                addChild(dropdownMenu);
+                _genderSwitchMenu = dropdownMenu;
+            }
 		}
 
 		private function createNationsMenu(data:Array) : void
@@ -252,10 +183,12 @@ package
 				thumbOffsetBottom:	0,
 				thumbOffsetTop:		0
 			};
-			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
-			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
-			addChild(dropdownMenu);
-			_nationsMenu = dropdownMenu;
+			var dropdownMenu:DropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+            if (dropdownMenu) {
+                //dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+                addChild(dropdownMenu);
+                _nationsMenu = dropdownMenu;
+            }
 		}
 
 		private function createSoundEventsMenu(data:Array) : void
@@ -273,50 +206,43 @@ package
 				thumbOffsetBottom:	0,
 				thumbOffsetTop:		0
 			};
-			dropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
-			//dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
-			addChild(dropdownMenu);
-			_soundEventsMenu = dropdownMenu;
+			var dropdownMenu:DropdownMenu = App.utils.classFactory.getComponent("DropdownMenuUI", DropdownMenu, setting);
+            if (dropdownMenu) {
+                //dropdownMenu.addEventListener(ListEvent.INDEX_CHANGE, onDropdownListIndexChange);
+                addChild(dropdownMenu);
+                _soundEventsMenu = dropdownMenu;
+            }
 		}
 
-		private function createScrollingList() : void
-		{
-			var data:Array = null;
-			
-			data = createButtonItems([ "data0", "data1" ]);
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "create scrollingList");
-			scrollingList = App.utils.classFactory.getComponent("ScrollingList", ScrollingList, {
-				scrollBar: "ScrollBar",
-				itemRenderer: "DropDownListItemRendererSound",
-				rowHeight: 25,
-				rowCount: 10,
-				width: 200,
-				height: 300
-			});
-			scrollingList.x = 0;
-			scrollingList.y = 0;
-			//scrollingList.dataProvider = new DataProvider([
-			//	{ index: 0, label: "label0", data: "data0" },
-			//	{ index: 1, label: "label1", data: "data1" }
-			//]);
-			scrollingList.dataProvider = new DataProvider(data);
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "create scrollingList");
-			addChild(scrollingList);
-			width = 200;
-			height = 300;
-		}
-		
+        private function createScrollingList(data:Array) : void
+        {
+            DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "create scrollingList");
+            var dataProvider:DataProvider = new DataProvider(data);
+            // DropdownList.dropdown に相当するプロパティが必要かどうかは不明
+            var settings:Object = {
+                x:                  0,
+                y:                  72,
+                width:              200,
+                height:             300,
+                itemRenderer:       "DropDownListItemRendererSound",
+                dataProvider:       dataProvider,
+                rowCount:           dataProvider.length,
+                rowHeight:          25,
+                scrollBar:          "ScrollBar",
+                thumbOffsetBottom:  0,
+                thumbOffsetTop:     0
+            }
+            // リンクするコンポート名が ScrollingList かどうかは不明
+            var scrollingList:ScrollingList = App.utils.classFactory.getComponent("ScrollingList", ScrollingList, settings);
+            if (scrollingList) {
+                DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "createed scrollingList");
+                addChild(scrollingList);
+            }
+        }
 		
 		override protected function onPopulate() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onPopulate");
-			//createButtons(wwsoundData);
-			//createScrollingList();
-			//createDropdownMenu(wwsoundData);
-			width = 480;
-			height = 200;
-			window.title = "Sound Test";
-			
 			super.onPopulate();
 		}
 		
@@ -330,41 +256,12 @@ package
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "draw");
 			super.draw();
-			//scrollBar.visible = true;
-			//scrollingList.validateNow();
 		}
 		
-		override protected function onBeforeDispose() : void
-		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onBeforeDispose");
-			super.onBeforeDispose();
-		}
-
 		override protected function onDispose() : void
 		{
 			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onDispose");
 			super.onDispose();
-		}
-		
-		public function tryClosing() : void
-		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "TryClosing");
-			dispose();
-		}
-		
-		public function onButtonClick(event:Event) : void
-		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onButtonClick");
-			var button:ISoundButton = event.target as SoundButton;
-			DebugUtils.LOG_DEBUG_FORMAT("%s: button=%s", className, button.label);
-			onButtonClickS(button.label);
-			DebugUtils.LOG_DEBUG_FORMAT("%s: button=%s", className, button.label);
-		}
-		
-		public function as_setConfig(data:Object) : void
-		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "as_setConfig");
-			_settings = data;
 		}
 		
 	}

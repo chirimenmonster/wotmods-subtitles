@@ -13,6 +13,7 @@ from gui.Scaleform.framework import ViewSettings, ViewTypes, ScopeTemplates
 from gui.Scaleform.framework.entities.View import View
 
 from gui.IngameSoundNotifications import IngameSoundNotifications
+from gui.game_control.epic_meta_game_ctrl import _FrontLineSounds
 
 from modsettings import MOD_NAME
 
@@ -36,10 +37,10 @@ class SelectorView(View):
         self.__readConfig()
 
     def __onLogGui(self, logType, msg, *kargs):
-        _logger.debug('%s.GUI2: %r, %r', str(logType), msg, kargs)
+        _logger.debug('%s.GUI: %r, %r', str(logType), msg, kargs)
 
     def __onLogGuiFormat(self, logType, msg, *kargs):
-        _logger.debug('%s.GUI2: %s', str(logType), msg % kargs)
+        _logger.debug('%s.GUI: %s', str(logType), msg % kargs)
         print '%s.GUI2: %s', str(logType), msg % kargs
 
     def afterCreate(self):
@@ -49,13 +50,6 @@ class SelectorView(View):
 
     def _populate(self):
         BigWorld.logInfo(MOD_NAME, '_populate', None)
-        settings = {
-            'soundModes':       self.__soundModes,
-            'genderSwitch':     self.__genderSwicth,
-            'nations':          self.__nations,
-            'events':           self.__events
-        }
-        self.flashObject.as_setConfig(settings)
         super(SelectorView, self)._populate()
 
     def __readConfig(self):
@@ -73,15 +67,34 @@ class SelectorView(View):
         #print events
         return
 
-    def getConfig(self):
-        return self.__events;
+    def getDropdownMenuData(self):
+        settings = {
+            'soundModes':       self.__soundModes,
+            'genderSwitch':     self.__genderSwicth,
+            'nations':          self.__nations,
+            'events':           self.__events
+        }
+        self.flashObject.as_setConfig(settings)
     
-    def onButtonClickS(self, data):
-        print 'onButtonClickS: ', data, data.genderSwitch.data;
-        setNationGender(data.nation, data.genderSwitch.data)
-        play(data.soundEvent)
-        #BigWorld.callback(1.0, partial(play, label));
-        
+    def playSoundEvent(self, data):
+        soundMode = data.soundMode
+        genderSwitch = data.genderSwitch.data
+        nation  = data.nation
+        soundEvent = data.soundEvent
+        print 'playSoundEvent: [genderSwitch={}, nation={}, soundMode={}, soundEvent={}]'.format(genderSwitch, nation, soundMode, soundEvent)
+        isFrontline = soundEvent.startswith('vo_eb_')
+        _FrontLineSounds.onChange(isFrontline)
+        g_instance = SoundGroups.g_instance
+        savedCurrentMode = g_instance.soundModes.currentMode
+        savedCurrentNationalPreset = g_instance.soundModes.currentNationalPreset
+        print 'playSoundEvent: [currentMode={}, currentNationalPreset={}]'.format(savedCurrentMode, savedCurrentNationalPreset)
+        g_instance.soundModes.setCurrentNation(nation, genderSwitch)
+        g_instance.soundModes.setMode(soundMode)
+        g_instance.playSound2D(soundEvent)
+        #g_instance.soundModes.setNationalMappingByPreset(savedCurrentNationalPreset)
+        #g_instance.soundModes.setMode(savedCurrentMode)
+        #_FrontLineSounds.onChange(False)
+
     def onTryClosing(self):
         print 'onTryClosing'
         return True
@@ -89,13 +102,3 @@ class SelectorView(View):
     def onWindowClose(self):
         print 'onWindowClose'
         self.destroy()
-
-
-def setNationGender(nation, genderSwitch):
-    SoundGroups.g_instance.soundModes.setCurrentNation(nation, genderSwitch)
-
-def play(soundPath):
-    SoundGroups.g_instance.playSound2D(soundPath)
-
-def onSoundEnd():
-    print 'onSoundEnd'

@@ -19,12 +19,12 @@ package
 		{
 			super();
 			className = getQualifiedClassName(this);
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "constructor");
+			//DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "constructor");
 		}
 
 		override protected function onPopulate() : void
 		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onPopulate");
+			//DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onPopulate");
 			super.onPopulate();
 			panel = new Panel();
 			addChild(panel);
@@ -32,7 +32,7 @@ package
 		
 		override protected function onDispose() : void
 		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onDispose");
+			//DebugUtils.LOG_DEBUG_FORMAT("%s: %s", className, "onDispose");
 			panel.stop();
 			removeChild(panel);
 			panel = null;
@@ -41,13 +41,13 @@ package
 				
 		public function as_setPosition(newX:int = 0, newY:int = 0) : void
 		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: (%r, %r)", className, "as_setPosition", x, y);
+			//DebugUtils.LOG_DEBUG_FORMAT("%s: %s: (%r, %r)", className, "as_setPosition", x, y);
 			panel.setPosition(newX, newY);
 		}
 		
 		public function as_setMessage(message:String) : void
 		{
-			DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "as_setMessage", message);
+			//DebugUtils.LOG_DEBUG_FORMAT("%s: %s: %s", className, "as_setMessage", message);
 			panel.setMessage(message);
 		}
 

@@ -8,8 +8,9 @@ import BigWorld
 import GUI
 import ResMgr
 from debug_utils import LOG_CURRENT_EXCEPTION
+from helpers import dependency
+from skeletons.gui.app_loader import IAppLoader
 from gui.shared import g_eventBus, events
-from gui.app_loader import g_appLoader
 from gui.app_loader.settings import APP_NAME_SPACE
 from gui.Scaleform.framework import g_entitiesFactories
 from gui.Scaleform.framework.entities.View import View, ViewKey
@@ -116,7 +117,8 @@ class Control(object):
         if event.ns != APP_NAME_SPACE.SF_BATTLE:
             return
         BigWorld.logInfo(MOD_NAME, 'AppLifeCycleEvent.INITIALIZED', None)
-        battleEntry = g_appLoader.getDefBattleApp()
+        appLoader = dependency.instance(IAppLoader)
+        battleEntry = appLoader.getDefBattleApp()
         if not battleEntry:
             return
         battleEntry.loadView(SFViewLoadParams(VIEW_ALIAS))
